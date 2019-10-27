@@ -1,0 +1,159 @@
+#!/bin/bash
+# 殼層腳本命令次序 Shell Order
+
+
+##shStyle 介面函式
+
+
+fnShorder_help="\
+殼層腳本命令次序 Shell Order
+[[USAGE]] [次序訂單 ((n1|n1a-n1b)[,(nN|nNa-nNb) ...])]
+[[OPT]]
+      --all    依原定次序全部執行。
+  -h, --help   幫助。
+"
+fnShorder() {
+    opt_all=0
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            --all )
+                opt_all=1
+                shift
+                ;;
+            -h | --help ) echo "$fnShorder_help"; exit ;;
+            * ) break ;;
+        esac
+    done
+
+    local menuArgu="$1"
+    local menu="$menuArgu"
+
+    if [ $opt_all -eq 1 ]; then
+        menu="1-${#fnShorder_fnNameList[@]}"
+    elif [ -z "$menu" ]; then
+        cat -n <<< "$fnShorder_titleTxt"
+        echo -n "請以編號寫下執行順序 (ex: 4-6,1-3,7) : "
+        read menu
+    fi
+
+    if [ -z "$menu" ]; then
+        fnThrow "$fnShorder_filename" 1 "取消執行。"
+    fi
+    if [[ ! ",$menu" =~ ^(,([0-9]+|[0-9]+-[0-9]+))+$ ]]; then
+        fnThrow "$fnShorder_filename" \
+            1 '順序語意不符合 "(n1|n1a-n1b)[,(nN|nNa-nNb) ...]"。'
+    fi
+
+    fnShorder_run `fnShorder_run_parseMenu "$menu"`
+}
+fnShorder_filename="fnShorder"
+fnShorder_titleTxt=""
+fnShorder_fnNameList=()
+fnShorder_register() {
+    local txt="$1"
+
+    local fnName=`cut -d ":" -f 1  <<< "$txt"`
+    local title=` cut -d ":" -f 2-  <<< "$txt"`
+
+    [ -z "$fnShorder_titleTxt" ] || fnShorder_titleTxt+=$_br
+    [ -n "$title" ] \
+        && fnShorder_titleTxt+=$title \
+        || fnShorder_titleTxt+="---"
+
+    fnShorder_fnNameList+=("$fnName")
+}
+fnShorder_run() {
+    local menuList=("$@")
+
+    local idx catIdx
+    local title fnName
+    local currLoopTimes=0
+    local runTotal=${#menuList[@]}
+
+    for idx in "${menuList[@]}"
+    do
+        ((currLoopTimes++))
+        ((catIdx= idx - 1))
+        if [ $catIdx -ge 0 ] && [ $catIdx -lt ${#fnShorder_fnNameList[@]} ]; then
+            title=`sed -n "${idx}p" <<< "$fnShorder_titleTxt"`
+            fnName=${fnShorder_fnNameList[catIdx]}
+            printf "\n(%s/%s). %s (%s)\n\n" "$currLoopTimes" "$runTotal" "$title" "$fnName"
+            "fnOrder_$fnName"
+            printf "\n\n"
+        else
+            printf "\n(%s/%s). ---\n\n" "$currLoopTimes" "$runTotal"
+        fi
+    done
+}
+fnShorder_run_parseMenu() {
+    local menu="$1"
+
+    local commaVal
+    local startNum endNum
+    local order=()
+
+    for commaVal in `tr "," " " <<< "$menu"`
+    do
+        if [[ "$commaVal" =~ - ]]; then
+            startNum=`cut -d "-" -f 1 <<< "$commaVal"`
+            endNum=`  cut -d "-" -f 2 <<< "$commaVal"`
+            order+=(`seq $startNum $endNum`)
+        else
+            order+=($commaVal)
+        fi
+    done
+
+    echo ${order[@]}
+}
+
+
+##shStyle ###
+
+
+[ -n "$_br" ] || _br="
+"
+
+type "fnThrow" &> /dev/null || {
+    fnThrow() {
+        local fileName=$1
+        local code=$2
+        local msg="$3"
+
+        if [ $# -eq 2 ]; then
+            msg="$code"
+            code=$fileName
+            fileName=$_filename
+        fi
+
+        echo -e "[$fileName]: $msg" >&2
+        exit $code
+    }
+}
+
+
+##shStyle ###
+
+
+fnShorder_register "sayHW:Say Hello World"
+fnOrder_sayHW() {
+    echo "Hello World"
+}
+
+fnShorder_register "whatName:お名前は何ですか？"
+fnOrder_whatName() {
+    echo "What is your name ?"
+}
+
+fnShorder_register "sayBway:Say BwayCer"
+fnOrder_sayBway() {
+    echo "BwayCer"
+}
+
+
+##shStyle ###
+
+
+fnShorder "$@"
+
