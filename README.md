@@ -18,6 +18,17 @@
 ./bin/shorderRegister ./example/sample
 ```
 
-成功執行後及可在 `./example/sample`
-目錄使用自動建立的可執行腳本。
+成功執行後會在 `./example/sample` 目錄下自動建立的可執行腳本。
+
+
+**2. 執行 殼層腳本命令次序 的腳本：**
+
+
+```sh
+# 本地端可直接執行
+./example/sample/sample.os.sh
+
+# 遠端主機可參考以下命令
+sh <(curl http://<host>:<port>/path/to/sample.os.sh)
+```
 
