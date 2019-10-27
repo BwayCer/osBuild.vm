@@ -1,0 +1,103 @@
+#!/bin/bash
+# 殼層腳本命令次序註冊器
+
+
+##shStyle ###
+
+
+[ -L "$0" ] && exec "`realpath "$0"`" "$@"
+
+
+##shStyle 函式庫
+
+
+fnShorderRegister_help="\
+殼層腳本命令次序註冊器
+# ─┬ 殼層腳本命令次序目錄/
+#  ├─┬ 註冊目錄 register.shorder/
+#  │ └── [註冊腳本.sh ...]
+#  └── (完整腳本.sh (自動產生))
+[[USAGE]] <殼層腳本命令次序目錄>
+[[OPT]]
+  -h, --help   幫助。
+"
+fnShorderRegister() {
+    [ $# -gt 0 ] || { echo "$fnShorderRegister_help"; exit; }
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            -h | --help ) echo "$fnShorderRegister_help"; exit ;;
+            * ) break ;;
+        esac
+    done
+
+    local shorderDir="$1"
+
+    local registerDir=`realpath "$shorderDir/register.shorder"`
+    local shorderFilePath="$_dirsh/shorder"
+
+
+    if [ ! -d "$shorderDir" ]; then
+        fnThrow 1 "請指定目錄路徑。"
+    fi
+    if [ ! -d "$registerDir" ]; then
+        fnThrow 1 "找不到 \"$registerDir\" 註冊目錄。"
+    fi
+    if [ ! -f "$shorderFilePath" ]; then
+        fnThrow 1 "找不到 \"$shorderFilePath\" 殼層腳本命令次序文件。"
+    fi
+
+    local shorderText=`cat "$shorderFilePath"`
+    local shorderInsertNumber=`
+        grep -nm 1 "^#{registerSpace}#$" <<< "$shorderText" |
+            sed "s/^ *\([0-9]\+\):.*$/\1/"
+    `
+    local txtPartA="`sed -n "1,$((shorderInsertNumber - 1))p"    <<< "$shorderText"`"
+    local txtPartB="`sed -n "$((shorderInsertNumber + 1)),\\\$p" <<< "$shorderText"`"
+
+    local line sourceFilePath targetFilePath registerTxt
+
+    while read line
+    do
+        sourceFilePath="$registerDir/$line"
+        targetFilePath="$shorderDir/$line"
+        registerTxt=`cat "$sourceFilePath"`
+        sed -e "2a # $sourceFilePath" \
+            <<< "$txtPartA$_br$_br$_br$registerTxt$_br$_br$_br$txtPartB" \
+            > "$targetFilePath"
+        chmod 755 "$targetFilePath"
+    done <<< `lsFile "$registerDir"`
+}
+
+
+
+##shStyle ###
+
+
+_dirsh=`dirname "$0"`
+_fileName=`basename "$0"`
+
+[ -n "$_br" ] || _br="
+"
+
+type "fnThrow" &> /dev/null || {
+    fnThrow() {
+        local fileName=$1
+        local code=$2
+        local msg="$3"
+
+        if [ $# -eq 2 ]; then
+            msg="$code"
+            code=$fileName
+            fileName=$_fileName
+        fi
+
+        echo -e "[$fileName]: $msg" >&2
+        exit $code
+    }
+}
+
+
+fnShorderRegister "$@"
+

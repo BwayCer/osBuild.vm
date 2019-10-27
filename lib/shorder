@@ -136,20 +136,7 @@ type "fnThrow" &> /dev/null || {
 ##shStyle ###
 
 
-fnShorder_register "sayHW:Say Hello World"
-fnOrder_sayHW() {
-    echo "Hello World"
-}
-
-fnShorder_register "whatName:お名前は何ですか？"
-fnOrder_whatName() {
-    echo "What is your name ?"
-}
-
-fnShorder_register "sayBway:Say BwayCer"
-fnOrder_sayBway() {
-    echo "BwayCer"
-}
+#{registerSpace}#
 
 
 ##shStyle ###
