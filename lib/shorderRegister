@@ -61,6 +61,8 @@ fnShorderRegister() {
     while read line
     do
         sourceFilePath="$registerDir/$line"
+        ([ -f "$sourceFilePath" ] && [[ "$sourceFilePath" =~ \.sh$ ]]) || continue
+
         targetFilePath="$shorderDir/$line"
         registerTxt=`cat "$sourceFilePath"`
         sed -e "2a # $sourceFilePath" \

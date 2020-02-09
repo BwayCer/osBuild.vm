@@ -2,6 +2,12 @@
 # 殼層腳本命令次序 Shell Order
 
 
+##shStyle ###
+
+
+set -e
+
+
 ##shStyle 介面函式
 
 
@@ -74,13 +80,25 @@ fnShorder_run() {
 
     for idx in "${menuList[@]}"
     do
-        ((currLoopTimes++))
-        ((catIdx= idx - 1))
+        # `set -e` 會因為 `((...))` 計算語法而退出
+        currLoopTimes=$((currLoopTimes + 1))
+        catIdx=$((idx - 1))
         if [ $catIdx -ge 0 ] && [ $catIdx -lt ${#fnShorder_fnNameList[@]} ]; then
             title=`sed -n "${idx}p" <<< "$fnShorder_titleTxt"`
             fnName=${fnShorder_fnNameList[catIdx]}
             printf "\n(%s/%s). %s (%s)\n\n" "$currLoopTimes" "$runTotal" "$title" "$fnName"
-            "fnOrder_$fnName"
+
+            sleep 1 # 思考是否繼續的緩衝時間
+            case "$fnName" in
+                tag )
+                    echo "--- 略 ---"
+                    ;;
+                * )
+                    set -x # 打印執行命令
+                    "fnOrder_$fnName"
+                    set +x
+                    ;;
+            esac
             printf "\n\n"
         else
             printf "\n(%s/%s). ---\n\n" "$currLoopTimes" "$runTotal"
