@@ -290,7 +290,11 @@ fnOrder_chooseMirrorlist() {
 
 fnShorder_register "installBasePackage:安裝基本程式包"
 fnOrder_installBasePackage() {
-    pacstrap /mnt base
+    # https://wiki.archlinux.org/index.php/Installation_guide#Install_essential_packages
+    pacstrap /mnt base linux linux-firmware dhcpcd vim
+        # linux-firmware 硬體支援?
+
+    ln -s /usr/bin/vim /mnt/usr/bin/vi
 }
 
 fnShorder_register "writeFstab:掛載寫入文件系統列表"
@@ -400,8 +404,6 @@ fnShorder_register "tag:>> 普通用戶"
 fnShorder_register "userMustTool:用戶必須工具"
 fnOrder_userMustTool() {
     pacman -S --noconfirm sudo
-
-    ln -s /usr/bin/vim /usr/bin/vi
 
     # visudo
     local txt="%wheel ALL=(ALL) NOPASSWD: ALL"
