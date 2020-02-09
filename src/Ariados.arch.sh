@@ -178,20 +178,24 @@ type "fnThrow" &> /dev/null || {
 #
 
 fnMakePkg() {
-    local homePath="$1"
-    local pkgName="$2"
+    local who="$1"
+    local homePath="$2"
+    local pkgName="$3"
 
     local currPath="$PWD"
     local downloadDir="$homePath/Desktop/Download"
     local pkgDir="$downloadDir/$pkgName"
 
     [ -d "$downloadDir" ] || mkdir -p "$downloadDir"
+    [ ! -d "$pkgDir" ] || rm -rf "$pkgDir"
 
     git clone "https://aur.archlinux.org/${pkgName}.git" "$pkgDir"
     cd "$pkgDir"
     # 必須切換到一般用戶
-    makepkg -s
-    sudo pacman -U ${pkgName}-*-x86_64.pkg.tar.xz
+    sudo -u "$who" makepkg -sic --noconfirm
+    # or
+    #   makepkg -s
+    #   sudo pacman -U ${pkgName}-*-x86_64.pkg.tar.xz
     cd "$currPath"
 }
 
@@ -456,7 +460,7 @@ fnOrder_xfce() {
 
 fnShorder_register "installHime:輸入法"
 fnOrder_installHime() {
-    fnMakePkg "$HOME" "hime-git"
+    fnMakePkg "bwaycer" "$HOME" "hime-git"
 
     # 需重新登入
     printf "%s\n" "" \
@@ -475,7 +479,7 @@ fnOrder_installHime() {
 fnShorder_register "installChrome:安裝 Google Chrome"
 fnOrder_installChrome() {
     # ex: google-chrome-73.0.3683.75-1-x86_64.pkg.tar.xz
-    fnMakePkg "$HOME" "google-chrome"
+    fnMakePkg "bwaycer" "$HOME" "google-chrome"
 }
 
 fnShorder_register "installVirtualboxTool:安裝 Virtualbox 工具"
