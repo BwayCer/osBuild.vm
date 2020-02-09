@@ -1,0 +1,102 @@
+#!/bin/bash
+# 建立啟動私人金鑰
+
+# [[USAGE]] <金鑰 .pub 路徑> <建立文件目錄路徑>
+
+
+pubRsaPath="$1"
+newFilePathDir="$2"
+
+if [ -z "$pubRsaPath" ]; then
+    echo "缺少必要參數。"
+    exit 1
+fi
+[ -n "$newFilePathDir" ] || newFilePathDir="$PWD"
+
+newFilePath="$newFilePathDir/startPrivateVmPass.sh"
+
+
+echo '#!/bin/bash
+# 啟用私人金鑰
+
+
+fnCreateSshKey() {
+    opt_pubRsa=""
+    opt_rsa=""
+    opt_home=0
+    opt_createKey=0
+    opt_name=""
+
+    while [ -n "y" ]
+    do
+        case "$1" in
+            --name )
+                opt_name=$2
+                shift 2
+                ;;
+            --pubRsa )
+                opt_pubRsa=$2
+                shift 2
+                ;;
+            --rsa )
+                opt_rsa=$2
+                shift 2
+                ;;
+            -H | --home )
+                opt_home=1
+                shift
+                ;;
+            -C | --create-key )
+                opt_createKey=1
+                shift 1
+                ;;
+            * ) break ;;
+        esac
+    done
+
+    local keyDirPathArgu="$1"
+
+    local ysHome=0
+    if [ $opt_home -eq 1 ] && [ -n "$keyDirPathArgu" ]; then
+        ysHome=1
+    fi
+
+    local keyDirPath="$keyDirPathArgu"
+    if [ -z "$keyDirPath" ]; then
+        keyDirPath="$PWD"
+    elif [ $ysHome -eq 1 ]; then
+        keyDirPath="$keyDirPath/.ssh"
+    fi
+
+    [ -d "$keyDirPath" ] || mkdir -p "$keyDirPath"
+
+    if [ $ysHome -eq 1 ]; then
+        chmod 700 "$keyDirPath"
+
+        echo "$opt_pubRsa" > "$keyDirPath/authorized_keys"
+        chmod 600            "$keyDirPath/authorized_keys"
+    fi
+
+    local name="vmpass"
+    if [ "$opt_createKey" -eq 1 ]; then
+        [ -z "$opt_name" ] || name="$opt_name"
+
+        echo "$opt_pubRsa" > "$keyDirPath/${name}_rsa.pub"
+        chmod 644            "$keyDirPath/${name}_rsa.pub"
+
+        echo -e "$opt_rsa" > "$keyDirPath/${name}_rsa"
+        chmod 600            "$keyDirPath/${name}_rsa"
+    fi
+}
+
+
+fnCreateSshKey --name "vmpass-private" \
+--pubRsa \
+"'`cat "$pubRsaPath"`'" \
+-H "$HOME"
+
+systemctl start sshd.service
+' > "$newFilePath"
+
+chmod 755 "$newFilePath"
+
