@@ -1,6 +1,6 @@
 #!/bin/bash
 # 殼層腳本命令次序 Shell Order
-# /home/bwaycer/ys/gitman/crepo/osBuild.vm/src/register.shorder/Ariados.arch.sh
+# /cygdrive/c/bway/auth.cygwin/bway/crepo/osBuild.vm/src/register.shorder/Ariados.arch.sh
 
 
 ##shStyle ###
@@ -383,14 +383,23 @@ fnOrder_setLanguage () {
 fnShorder_register "iLikePackage:主要程式包安裝"
 fnOrder_iLikePackage() {
     pacman -S --noconfirm \
-        bash-completion base-devel tmux wget tree \
-        nmap \
+        bash-completion tmux wget tree \
+        nmap base-devel \
         git docker
     # pacman -S --noconfirm \
     #     arch-install-scripts gptfdisk exfat-utils partclone \
     #     cifs-utils ntfs-3g
 
     systemctl enable docker.service
+}
+
+# fnShorder_register "k8sEnv:kubernetes 環境安裝"
+fnOrder_k8sEnv() {
+    pacman -S --noconfirm \
+        kubectl minikube
+
+    # TODO
+    # minikube start --vm-driver=none
 }
 
 

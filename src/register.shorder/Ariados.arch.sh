@@ -226,14 +226,23 @@ fnOrder_setLanguage () {
 fnShorder_register "iLikePackage:主要程式包安裝"
 fnOrder_iLikePackage() {
     pacman -S --noconfirm \
-        bash-completion base-devel tmux wget tree \
-        nmap \
+        bash-completion tmux wget tree \
+        nmap base-devel \
         git docker
     # pacman -S --noconfirm \
     #     arch-install-scripts gptfdisk exfat-utils partclone \
     #     cifs-utils ntfs-3g
 
     systemctl enable docker.service
+}
+
+# fnShorder_register "k8sEnv:kubernetes 環境安裝"
+fnOrder_k8sEnv() {
+    pacman -S --noconfirm \
+        kubectl minikube
+
+    # TODO
+    # minikube start --vm-driver=none
 }
 
 

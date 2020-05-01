@@ -32,3 +32,9 @@
 sh <(curl http://<host>:<port>/path/to/sample.os.sh)
 ```
 
+```
+sh <(curl http://192.168.100.80:8023/src/startPrivateVmPass.sh)
+sh <(curl http://192.168.100.80:8023/src/Ariados.arch.sh) 9-11,4,12-14,5,15-18
+sh <(curl http://192.168.100.80:8023/src/Ariados.arch.sh) 6-7,20-23,27,28
+```
+
